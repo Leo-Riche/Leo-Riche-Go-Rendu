@@ -270,6 +270,20 @@ func TestShippedWorldIsValid(t *testing.T) {
 		}
 	}
 
+	// Every foe and boss must look like an API slug: lower case, no spaces.
+	// A typo here would only surface as a failed fetch mid-game.
+	for _, r := range w.Regions {
+		names := append([]string{}, r.Foes...)
+		if r.Boss != "" {
+			names = append(names, r.Boss)
+		}
+		for _, name := range names {
+			if name != strings.ToLower(name) || strings.ContainsAny(name, " _") {
+				t.Errorf("region %q lists %q, which is not a slug", r.ID, name)
+			}
+		}
+	}
+
 	// The gated region must be reachable from somewhere.
 	for _, r := range w.Regions {
 		if r.MinLevel == 0 {

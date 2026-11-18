@@ -12,7 +12,15 @@
         "sells": ["potions"]
       },
       "foes": ["giant-rat", "swarm-of-rats", "bandit"],
-      "exits": ["ashen-marsh", "hollow-barrow", "the-burned-mill"]
+      "exits": ["ashen-marsh", "hollow-barrow", "the-burned-mill", "tanners-row"]
+    },
+    {
+      "id": "tanners-row",
+      "name": "Tanner's Row",
+      "description": "Eleven sheds along a drainage ditch, and the smell arrives before you do. The hides on the racks are the wrong shape for cattle.",
+      "danger": 0,
+      "foes": ["giant-rat", "stirge", "kobold"],
+      "exits": ["crossroads", "hangmans-ford"]
     },
     {
       "id": "ashen-marsh",
@@ -41,12 +49,33 @@
       "exits": ["crossroads", "gravewood"]
     },
     {
+      "id": "hangmans-ford",
+      "name": "Hangman's Ford",
+      "description": "A shallow crossing where the current gives things back. The ferryman keeps what the river hands him and asks no questions about the rest.",
+      "danger": 1,
+      "shop": {
+        "name": "The Ferryman",
+        "greeting": "He does not row anyone across any more. He sits on the bank, drying out what the water brought him, and he will sell you any of it.",
+        "sells": ["weapons", "books"]
+      },
+      "foes": ["bandit", "kobold", "worg"],
+      "exits": ["tanners-row", "the-weeping-mine"]
+    },
+    {
       "id": "hollow-barrow",
       "name": "Hollow Barrow",
       "description": "A grass-covered mound with its mouth pried open. The air inside is colder than the night and tastes of old coins.",
       "danger": 2,
       "foes": ["skeleton", "zombie", "shadow", "specter"],
-      "exits": ["crossroads", "drowned-chapel"]
+      "exits": ["crossroads", "drowned-chapel", "the-weeping-mine"]
+    },
+    {
+      "id": "the-weeping-mine",
+      "name": "The Weeping Mine",
+      "description": "Water runs down every wall and nobody can say where it comes from. The pit props have been chewed, and the tools left behind are not sized for human hands.",
+      "danger": 2,
+      "foes": ["duergar", "grick", "darkmantle", "rust-monster"],
+      "exits": ["hangmans-ford", "hollow-barrow", "carrion-spires"]
     },
     {
       "id": "gravewood",
@@ -54,7 +83,7 @@
       "description": "Trees grown through old war graves. Webbing hangs between the trunks in sheets, and something up there is patient.",
       "danger": 2,
       "foes": ["giant-spider", "owlbear", "gnoll", "hobgoblin"],
-      "exits": ["the-burned-mill", "obsidian-vault"]
+      "exits": ["the-burned-mill", "obsidian-vault", "carrion-spires"]
     },
     {
       "id": "drowned-chapel",
@@ -62,7 +91,23 @@
       "description": "Pews float in black water up to your chest. The altar candles are lit and nobody has been here for two hundred years.",
       "danger": 3,
       "foes": ["ghoul", "wight", "vampire-spawn", "will-o-wisp"],
-      "exits": ["ashen-marsh", "hollow-barrow", "obsidian-vault"]
+      "exits": ["ashen-marsh", "hollow-barrow", "obsidian-vault", "the-pale-orchard"]
+    },
+    {
+      "id": "carrion-spires",
+      "name": "Carrion Spires",
+      "description": "Needles of rock, white to the waist with droppings, and singing coming down from the nests. The bones at the bottom have been picked very clean.",
+      "danger": 3,
+      "foes": ["harpy", "giant-vulture", "cockatrice", "manticore"],
+      "exits": ["the-weeping-mine", "gravewood"]
+    },
+    {
+      "id": "the-pale-orchard",
+      "name": "The Pale Orchard",
+      "description": "Rows of dead apple trees in flower, out of season, in the dark. Something has been hung in every eighth tree and left to ripen.",
+      "danger": 3,
+      "foes": ["shambling-mound", "awakened-tree", "ghast", "wraith"],
+      "exits": ["drowned-chapel", "the-frozen-stair"]
     },
     {
       "id": "obsidian-vault",
@@ -70,17 +115,35 @@
       "description": "A stair of black glass descending into warmth. Every step you take is answered, far below, by something much heavier.",
       "danger": 4,
       "foes": ["troll", "minotaur", "mummy", "young-black-dragon"],
-      "exits": ["drowned-chapel", "gravewood", "hall-of-the-mummy-king"]
+      "exits": ["drowned-chapel", "gravewood", "hall-of-the-mummy-king", "the-frozen-stair"]
+    },
+    {
+      "id": "the-frozen-stair",
+      "name": "The Frozen Stair",
+      "description": "The steps go up into cold that burns, and the walls are glazed with ice an arm thick. There are shapes in the ice, and some of them are still dressed.",
+      "danger": 4,
+      "foes": ["winter-wolf", "ice-mephit", "ettin", "cloaker"],
+      "exits": ["the-pale-orchard", "obsidian-vault", "cradle-of-the-white-wyrm"]
     },
     {
       "id": "hall-of-the-mummy-king",
       "name": "Hall of the Mummy King",
       "description": "A hall of painted pillars, swept clean. At the far end a figure in gold leaf sits waiting, and it has been told your name.",
       "danger": 5,
-      "min_level": 5,
+      "min_level": 7,
       "boss": "mummy-lord",
       "foes": ["mummy", "wight"],
       "exits": ["obsidian-vault"]
+    },
+    {
+      "id": "cradle-of-the-white-wyrm",
+      "name": "Cradle of the White Wyrm",
+      "description": "A bowl of blue ice open to a sky full of stars, and warm air rising out of the middle of it. Everything brought here was dragged, and the drag marks all run one way.",
+      "danger": 5,
+      "min_level": 8,
+      "boss": "young-white-dragon",
+      "foes": ["winter-wolf", "ice-mephit"],
+      "exits": ["the-frozen-stair"]
     }
   ]
 }

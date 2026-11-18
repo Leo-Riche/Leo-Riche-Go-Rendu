@@ -251,7 +251,7 @@ All seven are implemented. The assignment caps the bonus at **+12**.
 | **Loot & equipment** | +4 | `internal/game/game.go` | `weapons` lists the SRD melee weapons from `/v1/weapons/`, `loot` scavenges a region once per visit, kills sometimes drop a weapon, `equip <weapon>` swaps it in and damage follows the new dice. |
 | **Spells** | +4 | `internal/game/creation.go` | Nine spells are fetched from `/v1/spells/` at creation, you pick two, `cast <spell>` once per rest. The dice are pulled out of the spell's own description; healing spells work out of combat, damage spells need a target and cost you your turn. |
 | **Faster dungeon** | +4 | `internal/open5e/client.go` | `travel` warms the cache for the region's foes concurrently (`sync.WaitGroup` with a bounded semaphore), and `explore` fetches its candidate draws the same way, so the first encounter does not wait on the network. |
-| **Boss region** | +3 | `world.json`, `internal/game/game.go` | `hall-of-the-mummy-king` is gated behind level 5 and holds a Mummy Lord (CR 15) with legendary actions. It is fought once; after that the region behaves normally. |
+| **Boss regions** | +3 | `world.json`, `internal/game/game.go` | Two regions are gated behind a character level and hold a named foe fought once: the Mummy Lord (CR 15) at level 7, and a Young White Dragon (CR 6) at level 8. After the kill the region behaves normally. |
 | **ANSI colours** | +2 | `internal/ansi` | Hand-rolled escape codes: HP bars that go green/yellow/red, danger pips, highlighted crits. Off with `-no-color`, `NO_COLOR=1` or `TERM=dumb`. |
 
 ## Beyond the brief
@@ -304,38 +304,55 @@ Type help for the command list, map to see where you are.
 The Crossroads
 Four roads meet under a leaning gallows. Someone has nailed a hand-drawn map to the post; three of the four roads have been scratched out.
 Danger ----- 0 (quiet)
-Exits: ashen-marsh, hollow-barrow, the-burned-mill
+Exits: ashen-marsh, hollow-barrow, the-burned-mill, tanners-row
 Things that live here: giant-rat, swarm-of-rats, bandit
+Mother Ash is trading here. (shop)
 
 grimhold [The Crossroads 30/30] > map
 Known regions:
+  tanners-row              -----  danger 0 (quiet)
+    exits: crossroads, hangmans-ford
 > crossroads               -----  danger 0 (quiet)
-    exits: ashen-marsh, hollow-barrow, the-burned-mill
+    exits: ashen-marsh, hollow-barrow, the-burned-mill, tanners-row
   ashen-marsh              *----  danger 1 (uneasy)
     exits: crossroads, drowned-chapel
+  hangmans-ford            *----  danger 1 (uneasy)
+    exits: tanners-row, the-weeping-mine
   the-burned-mill          *----  danger 1 (uneasy)
     exits: crossroads, gravewood
   gravewood                **---  danger 2 (dangerous)
-    exits: the-burned-mill, obsidian-vault
+    exits: the-burned-mill, obsidian-vault, carrion-spires
   hollow-barrow            **---  danger 2 (dangerous)
-    exits: crossroads, drowned-chapel
+    exits: crossroads, drowned-chapel, the-weeping-mine
+  the-weeping-mine         **---  danger 2 (dangerous)
+    exits: hangmans-ford, hollow-barrow, carrion-spires
+  carrion-spires           ***--  danger 3 (deadly)
+    exits: the-weeping-mine, gravewood
   drowned-chapel           ***--  danger 3 (deadly)
-    exits: ashen-marsh, hollow-barrow, obsidian-vault
+    exits: ashen-marsh, hollow-barrow, obsidian-vault, the-pale-orchard
+  the-pale-orchard         ***--  danger 3 (deadly)
+    exits: drowned-chapel, the-frozen-stair
   obsidian-vault           ****-  danger 4 (murderous)
-    exits: drowned-chapel, gravewood, hall-of-the-mummy-king
-  hall-of-the-mummy-king   *****  danger 5 (hopeless)    (level 5+)
+    exits: drowned-chapel, gravewood, hall-of-the-mummy-king, the-frozen-stair
+  the-frozen-stair         ****-  danger 4 (murderous)
+    exits: the-pale-orchard, obsidian-vault, cradle-of-the-white-wyrm
+  cradle-of-the-white-wyrm *****  danger 5 (hopeless)    (level 8+)
+    exits: the-frozen-stair
+  hall-of-the-mummy-king   *****  danger 5 (hopeless)    (level 7+)
     exits: obsidian-vault
 Travel with: travel <region>
 grimhold [The Crossroads 30/30] > travel ashen-marsh
 You travel to Ashen Marsh.
 Fog, iron, and things that breathe under the water. The reeds are grey with ash and they lean away from you as you pass.
 Danger *---- 1 (uneasy)
+The Drowned Library is trading here. (shop)
 grimhold [Ashen Marsh 30/30] > look
 Ashen Marsh
 Fog, iron, and things that breathe under the water. The reeds are grey with ash and they lean away from you as you pass.
 Danger *---- 1 (uneasy)
 Exits: crossroads, drowned-chapel
 Things that live here: goblin, skeleton, ghoul
+The Drowned Library is trading here. (shop)
 grimhold [Ashen Marsh 30/30] > explore
 Encounter! Goblin comes out of the dark.
   Goblin  CR 1/4  AC 15  [##############] 7/7
@@ -359,7 +376,7 @@ grimhold [Ashen Marsh 25/30 !Goblin] > fight all
   Goblin falls.
 Goblin is dead.
 You gain 50 experience (50 total).
-You pick 3 gold out of the mess (13 gp carried).
+You pick 4 gold out of the mess (14 gp carried).
 grimhold [Ashen Marsh 22/30] > character
 Leo, level 1
   HP          [##############......] 22/30
@@ -367,9 +384,9 @@ Leo, level 1
   Attack      d20+4 vs armour class
   Damage      1d6+3 with Notched shortsword (1d6 slashing)
   Armour      13
-  Gold        13 gp
+  Gold        14 gp
 grimhold [Ashen Marsh 22/30] > loot
-You turn over what is left of Ashen Marsh and find 7 gold (20 gp carried).
+You turn over what is left of Ashen Marsh and find 7 gold (21 gp carried).
 grimhold [Ashen Marsh 22/30] > quit
 You step back out into the rain. Grimhold keeps your name.
 ```
@@ -496,9 +513,33 @@ inspect <monster> for a full stat block.
 
 ## The world
 
-`world.json` holds eight regions, from the quiet crossroads to the Hall of the
-Mummy King. The format is the one given in the assignment, plus three optional
-fields: two for the boss region, one for the merchant standing in it.
+`world.json` holds fifteen regions, from the quiet crossroads down to the two
+places you should not walk into early. The format is the one given in the
+assignment, plus three optional fields: two for the boss regions, one for the
+merchant standing in a region.
+
+Two branches leave the crossroads and meet again in the deep end, so there is
+more than one way down:
+
+| Danger | Regions |
+|---|---|
+| 0, quiet | The Crossroads, Tanner's Row |
+| 1, uneasy | Ashen Marsh, The Burned Mill, Hangman's Ford |
+| 2, dangerous | Hollow Barrow, Gravewood, The Weeping Mine |
+| 3, deadly | The Drowned Chapel, Carrion Spires, The Pale Orchard |
+| 4, murderous | Obsidian Vault, The Frozen Stair |
+| 5, gated | Hall of the Mummy King (level 7), Cradle of the White Wyrm (level 8) |
+
+The danger rating decides how many foes `explore` draws before keeping the
+worst, so a deadly region is not merely flavour: it rolls twice and gives you
+the uglier of the two.
+
+The two gates are set where the fight is genuinely winnable rather than merely
+survivable. Measured over fourteen seeded runs with a maul and no potions, a
+character who has only just met the requirement wins the Mummy Lord about half
+the time, and the dragon about a third; two levels later it is roughly two
+thirds and three quarters. Potions and spells move both numbers up, which is
+what the merchants are for.
 
 ```json
 {
@@ -506,7 +547,7 @@ fields: two for the boss region, one for the merchant standing in it.
   "name": "Hall of the Mummy King",
   "description": "A hall of painted pillars, swept clean.",
   "danger": 5,
-  "min_level": 5,
+  "min_level": 7,
   "boss": "mummy-lord",
   "foes": ["mummy", "wight"],
   "exits": ["obsidian-vault"]
