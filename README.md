@@ -133,8 +133,8 @@ game, and hands them to the REPL. Errors are wrapped with `fmt.Errorf("...:
 - Typed structs for monsters, weapons and spells; the parts of the payload the
   game does not use are ignored.
 - Pagination follows the `next` and `previous` URLs the API returns, after
-  checking they point at the same host — those URLs come from a response body,
-  so they are not followed blindly.
+  checking they point at the same host, because those URLs come from a
+  response body and are not followed blindly.
 - Responses are cached in memory by URL in a `map` guarded by a
   `sync.Mutex`, with a five-minute TTL. A **reaper goroutine** wakes on a
   `time.Ticker` every minute and purges expired entries; an entry that expires
@@ -163,7 +163,7 @@ game, and hands them to the REPL. Errors are wrapped with `fmt.Errorf("...:
 Two house rules worth naming:
 
 - **Rider damage.** Open5e writes a monster's whole damage output into one
-  expression — the Mummy Lord's rotting fist is `3d6+6d6` because the second
+  expression: the Mummy Lord's rotting fist is `3d6+6d6` because the second
   group is rot that only lands on a failed saving throw. Grimhold has no
   saving throws, so the first dice group plus any flat modifier is the damage
   on a hit, and the remaining groups become rider damage that only lands on a
@@ -318,7 +318,7 @@ grimhold [Ashen Marsh 22/30] > quit
 You step back out into the rain. Grimhold keeps your name.
 ```
 
-The library side of the game, and the cache earning its keep — the second
+The library side of the game, and the cache earning its keep. The second
 `inspect orc` is served from memory:
 
 ```text
@@ -393,5 +393,3 @@ Monster, weapon and spell data is served by [Open5e](https://open5e.com) from
 the D&D 5e SRD and other openly licensed sources, each carrying its own licence
 (see `document__license_url` in the API responses). The game asks for nothing
 else: no API key, no account.
-#   L e o - R i c h e - G o - R e n d u  
- 
