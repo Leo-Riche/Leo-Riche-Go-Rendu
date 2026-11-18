@@ -61,6 +61,10 @@ type Game struct {
 	// weapons is the API weapon table, fetched on first use
 	weapons []open5e.Weapon
 
+	// stock is each merchant's goods, built once per region so that prices
+	// do not shuffle between two looks at the same blanket
+	stock map[string][]Item
+
 	wg sync.WaitGroup
 }
 
@@ -145,6 +149,10 @@ func (g *Game) Look() []string {
 	if r.Boss != "" && !g.BossesSlain[r.Boss] {
 		lines = append(lines, ansi.Magenta("Something far worse is waiting at the end of this place."))
 	}
+	if r.Shop != nil {
+		lines = append(lines, fmt.Sprintf("%s is trading here. %s",
+			ansi.Cyan(r.Shop.Name), ansi.Gray("(shop)")))
+	}
 	if g.Rested {
 		lines = append(lines, ansi.Gray("You have already rested here."))
 	}
@@ -197,6 +205,10 @@ func (g *Game) Travel(ctx context.Context, id string) ([]string, error) {
 		fmt.Sprintf("You travel to %s.", ansi.Bold(target.Name)),
 		target.Description,
 		fmt.Sprintf("Danger %s %d (%s)", ansi.Danger(target.Danger), target.Danger, target.DangerLabel()),
+	}
+	if target.Shop != nil {
+		lines = append(lines, fmt.Sprintf("%s is trading here. %s",
+			ansi.Cyan(target.Shop.Name), ansi.Gray("(shop)")))
 	}
 	return lines, nil
 }
@@ -420,7 +432,7 @@ func (g *Game) victory() []string {
 	lines := []string{ansi.Green(fmt.Sprintf("%s is dead.", foe.Name))}
 	lines = append(lines, g.Char.GainXP(foe.XP)...)
 
-	gold := g.Roller.D(10) + int(foe.CR*5)
+	gold := g.Roller.D(10) + int(foe.CR*8)
 	if foe.Boss {
 		gold *= 3
 	}

@@ -90,8 +90,8 @@ func SpellFromAPI(s *open5e.Spell) Spell {
 	return out
 }
 
-// Summary is the one-line description shown while picking spells.
-func (s Spell) Summary() string {
+// Details describes a spell without naming it: "level 1, damage 3d6".
+func (s Spell) Details() string {
 	kind := "damage"
 	if s.Heals {
 		kind = "healing"
@@ -100,5 +100,10 @@ func (s Spell) Summary() string {
 	if s.Level > 0 {
 		level = "level " + strconv.Itoa(s.Level)
 	}
-	return s.Name + " (" + level + ", " + kind + " " + s.Dice + ")"
+	return level + ", " + kind + " " + s.Dice
+}
+
+// Summary is the one-line description shown while picking spells.
+func (s Spell) Summary() string {
+	return s.Name + " (" + s.Details() + ")"
 }

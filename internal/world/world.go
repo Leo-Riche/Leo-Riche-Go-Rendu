@@ -30,7 +30,21 @@ type Region struct {
 	// Boss names an Open5e monster slug that is fought once, instead of a
 	// random foe, the first time the player explores here.
 	Boss string `json:"boss,omitempty"`
+	// Shop is the merchant trading here, if any.
+	Shop *Shop `json:"shop,omitempty"`
 }
+
+// Shop is the merchant standing in a region. Sells lists the kinds of goods
+// on the blanket; the game decides what each kind means and where the stock
+// comes from.
+type Shop struct {
+	Name     string   `json:"name"`
+	Greeting string   `json:"greeting"`
+	Sells    []string `json:"sells"`
+}
+
+// ShopKinds are the values a shop may list in "sells".
+var ShopKinds = []string{"potions", "weapons", "books"}
 
 // World is the whole map plus a lookup index.
 type World struct {
@@ -84,6 +98,9 @@ func (w *World) init() error {
 		case r.Danger < 0:
 			return fmt.Errorf("region %q has a negative danger", r.ID)
 		}
+		if err := r.Shop.validate(r.ID); err != nil {
+			return err
+		}
 		if _, dup := w.index[r.ID]; dup {
 			return fmt.Errorf("duplicate region id %q", r.ID)
 		}
@@ -106,6 +123,47 @@ func (w *World) init() error {
 		}
 	}
 	return nil
+}
+
+// validate checks a shop declaration. A nil shop is a region without a
+// merchant, which is fine.
+func (s *Shop) validate(regionID string) error {
+	if s == nil {
+		return nil
+	}
+	if strings.TrimSpace(s.Name) == "" {
+		return fmt.Errorf("region %q has a shop with no name", regionID)
+	}
+	if len(s.Sells) == 0 {
+		return fmt.Errorf("shop %q in region %q sells nothing", s.Name, regionID)
+	}
+	for _, kind := range s.Sells {
+		known := false
+		for _, allowed := range ShopKinds {
+			if kind == allowed {
+				known = true
+				break
+			}
+		}
+		if !known {
+			return fmt.Errorf("shop %q in region %q sells unknown goods %q (known: %s)",
+				s.Name, regionID, kind, strings.Join(ShopKinds, ", "))
+		}
+	}
+	return nil
+}
+
+// Deals reports whether the shop trades in a kind of goods.
+func (s *Shop) Deals(kind string) bool {
+	if s == nil {
+		return false
+	}
+	for _, k := range s.Sells {
+		if k == kind {
+			return true
+		}
+	}
+	return false
 }
 
 // Region returns a region by id.

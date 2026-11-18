@@ -27,7 +27,8 @@ const testWorldJSON = `{
     {"id": "crossroads", "name": "The Crossroads", "description": "Four roads.",
      "danger": 0, "foes": ["goblin"], "exits": ["marsh"]},
     {"id": "marsh", "name": "Ashen Marsh", "description": "Fog and iron.",
-     "danger": 1, "foes": ["goblin"], "exits": ["crossroads"]}
+     "danger": 1, "foes": ["goblin"], "exits": ["crossroads"],
+     "shop": {"name": "Mother Ash", "greeting": "A blanket of bottles.", "sells": ["potions", "weapons"]}}
   ]
 }`
 
@@ -41,6 +42,12 @@ const testGoblinJSON = `{
 const testWeaponsJSON = `{"count":1,"next":null,"previous":null,"results":[
   {"name":"Greatsword","slug":"greatsword","category":"Martial Melee Weapons",
    "cost":"50 gp","damage_dice":"2d6","damage_type":"slashing","document__slug":"wotc-srd"}]}`
+
+const testPotionJSON = `{
+  "slug": "potion-of-healing", "name": "Potion of Healing", "type": "Potion",
+  "desc": "| Potion of ... | Rarity | HP Regained |\n|---|---|---|\n| Healing | Common | 2d4 + 2 |\n| Greater healing | Uncommon | 4d4 + 4 |",
+  "rarity": "varies", "document__slug": "wotc-srd"
+}`
 
 func init() {
 	// Keep the assertions below free of escape codes.
@@ -58,6 +65,9 @@ func newTestREPL(t *testing.T, input string) (*REPL, *bytes.Buffer, *game.Game) 
 
 	mux.HandleFunc("/v1/weapons/", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, testWeaponsJSON)
+	})
+	mux.HandleFunc("/v1/magicitems/potion-of-healing/", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, testPotionJSON)
 	})
 	mux.HandleFunc("/v1/monsters/goblin/", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, testGoblinJSON)
@@ -191,6 +201,13 @@ func TestWrongArgumentCountsAreRefusedNotCrashed(t *testing.T) {
 		"weapons all",
 		"slain list",
 		"clear screen",
+		"shop now",
+		"inventory all",
+		"buy",
+		"sell",
+		"use",
+		"drink",
+		"read",
 	}
 
 	for _, line := range lines {
@@ -356,6 +373,77 @@ func TestScriptedSessionPlaysThrough(t *testing.T) {
 	}
 	if !game.SaveExists(savePath) {
 		t.Error("the save command wrote no file")
+	}
+}
+
+func TestShoppingThroughTheREPL(t *testing.T) {
+	script := strings.Join([]string{
+		"shop",         // no merchant at the crossroads
+		"travel marsh", // Mother Ash trades here
+		"shop",
+		"buy 1", // the cheapest potion
+		"inventory",
+		"drink healing",
+		"sell potion of healing",
+		"quit",
+	}, "\n") + "\n"
+
+	r, out, g := newTestREPL(t, script)
+	g.Char.Gold = 500
+	g.Char.Hurt(10)
+
+	if err := r.Run(context.Background()); err != nil {
+		t.Fatalf("Run returned %v", err)
+	}
+
+	got := out.String()
+	for _, want := range []string{
+		"nobody is trading here",
+		"Mother Ash",
+		"Potion of Healing",
+		"You buy",
+		"Carried",
+		"regain",
+	} {
+		if !strings.Contains(got, want) {
+			t.Errorf("the shopping session never mentions %q:\n%s", want, got)
+		}
+	}
+	// One potion was bought and drunk, so selling it afterwards must fail.
+	if !strings.Contains(got, "not carrying anything called") {
+		t.Error("selling a potion already drunk should have been refused")
+	}
+}
+
+func TestDrinkAndReadAreSeparateCommands(t *testing.T) {
+	r, _, g := newTestREPL(t, "")
+	ctx := context.Background()
+
+	if _, ok := r.commands["drink"]; !ok {
+		t.Fatal("drink is not registered as its own command")
+	}
+	if _, ok := r.commands["read"]; !ok {
+		t.Fatal("read is not registered as its own command")
+	}
+
+	g.Char.AddItem(game.Item{
+		Slug: "potion-of-healing", Name: "Potion of Healing",
+		Kind: game.KindPotion, Price: 50, Count: 1, Heal: "2d4+2",
+	})
+	g.Char.Hurt(10)
+
+	// read must not drink a potion.
+	if err := r.Dispatch(ctx, "read healing"); err == nil {
+		t.Error("read should refuse a potion")
+	}
+	if _, ok := g.Char.FindItem("healing"); !ok {
+		t.Fatal("the refused read drank the potion anyway")
+	}
+	if err := r.Dispatch(ctx, "drink healing"); err != nil {
+		t.Errorf("drink returned %v", err)
+	}
+	if _, ok := g.Char.FindItem("healing"); ok {
+		t.Error("drink did not consume the potion")
 	}
 }
 

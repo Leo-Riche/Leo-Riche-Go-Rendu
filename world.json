@@ -6,6 +6,11 @@
       "name": "The Crossroads",
       "description": "Four roads meet under a leaning gallows. Someone has nailed a hand-drawn map to the post; three of the four roads have been scratched out.",
       "danger": 0,
+      "shop": {
+        "name": "Mother Ash",
+        "greeting": "An old woman sits on the milestone with a blanket of corked bottles. She does not ask where you are going.",
+        "sells": ["potions"]
+      },
       "foes": ["giant-rat", "swarm-of-rats", "bandit"],
       "exits": ["ashen-marsh", "hollow-barrow", "the-burned-mill"]
     },
@@ -14,6 +19,11 @@
       "name": "Ashen Marsh",
       "description": "Fog, iron, and things that breathe under the water. The reeds are grey with ash and they lean away from you as you pass.",
       "danger": 1,
+      "shop": {
+        "name": "The Drowned Library",
+        "greeting": "A punt is moored in the reeds, loaded with books in oilcloth. Nobody is aboard, and the prices are chalked on the hull.",
+        "sells": ["books"]
+      },
       "foes": ["goblin", "skeleton", "ghoul"],
       "exits": ["crossroads", "drowned-chapel"]
     },
@@ -22,6 +32,11 @@
       "name": "The Burned Mill",
       "description": "The wheel still turns, though the river dried out a generation ago. Bandits have carved tally marks into the doorframe; the last row is unfinished.",
       "danger": 1,
+      "shop": {
+        "name": "Gritt the Fence",
+        "greeting": "A man with too many knives leans in the doorway. Everything on his rack came off somebody.",
+        "sells": ["weapons", "potions"]
+      },
       "foes": ["bandit", "orc", "wolf"],
       "exits": ["crossroads", "gravewood"]
     },

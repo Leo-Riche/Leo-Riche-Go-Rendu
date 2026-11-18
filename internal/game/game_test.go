@@ -23,9 +23,11 @@ const testWorldJSON = `{
   "start": "crossroads",
   "regions": [
     {"id": "crossroads", "name": "The Crossroads", "description": "Four roads.",
-     "danger": 0, "foes": ["goblin"], "exits": ["marsh"]},
+     "danger": 0, "foes": ["goblin"], "exits": ["marsh"],
+     "shop": {"name": "Mother Ash", "greeting": "A blanket of bottles.", "sells": ["potions"]}},
     {"id": "marsh", "name": "Ashen Marsh", "description": "Fog and iron.",
-     "danger": 1, "foes": ["goblin", "ogre"], "exits": ["crossroads", "vault"]},
+     "danger": 1, "foes": ["goblin", "ogre"], "exits": ["crossroads", "vault"],
+     "shop": {"name": "The Drowned Library", "greeting": "A punt of books.", "sells": ["books", "weapons"]}},
     {"id": "vault", "name": "Obsidian Vault", "description": "Black glass stairs.",
      "danger": 4, "min_level": 5, "boss": "mummy-lord",
      "foes": ["ogre"], "exits": ["marsh"]}
@@ -65,13 +67,24 @@ const testSwarmJSON = `{
   "actions": ""
 }`
 
+const testPotionJSON = `{
+  "slug": "potion-of-healing",
+  "name": "Potion of Healing",
+  "type": "Potion",
+  "desc": "You regain hit points when you drink this potion.\n\n**Potions of Healing (table)**\n\n| Potion of ...    | Rarity    | HP Regained |\n|------------------|-----------|-------------|\n| Healing          | Common    | 2d4 + 2     |\n| Greater healing  | Uncommon  | 4d4 + 4     |\n| Superior healing | Rare      | 8d4 + 8     |\n| Supreme healing  | Very rare | 10d4 + 20   |",
+  "rarity": "varies",
+  "document__slug": "wotc-srd"
+}`
+
 const testWeaponsJSON = `{
   "count": 2, "next": null, "previous": null,
   "results": [
     {"name": "Greatsword", "slug": "greatsword", "category": "Martial Melee Weapons",
      "cost": "50 gp", "damage_dice": "2d6", "damage_type": "slashing", "document__slug": "wotc-srd"},
     {"name": "Club", "slug": "club", "category": "Simple Melee Weapons",
-     "cost": "1 sp", "damage_dice": "1d4", "damage_type": "bludgeoning", "document__slug": "wotc-srd"}
+     "cost": "1 sp", "damage_dice": "1d4", "damage_type": "bludgeoning", "document__slug": "wotc-srd"},
+    {"name": "Longbow", "slug": "longbow", "category": "Martial Ranged Weapons",
+     "cost": "50 gp", "damage_dice": "1d8", "damage_type": "piercing", "document__slug": "wotc-srd"}
   ]
 }`
 
@@ -105,6 +118,7 @@ func newTestGame(t *testing.T, seed int64) *Game {
 	serve("/v1/monsters/mummy-lord/", testMummyLordJSON)
 	serve("/v1/monsters/swarm-of-rats/", testSwarmJSON)
 	serve("/v1/weapons/", testWeaponsJSON)
+	serve("/v1/magicitems/potion-of-healing/", testPotionJSON)
 	serve("/v1/spells/fire-bolt/", testFireBoltJSON)
 	serve("/v1/spells/cure-wounds/", testCureWoundsJSON)
 	mux.HandleFunc("/v1/monsters/", func(w http.ResponseWriter, r *http.Request) {

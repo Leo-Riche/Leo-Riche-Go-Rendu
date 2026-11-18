@@ -116,6 +116,24 @@ func TestParseRejectsBrokenWorlds(t *testing.T) {
 			want: "negative danger",
 		},
 		{
+			name: "shop with no name",
+			json: `{"start":"a","regions":[{"id":"a","name":"A","danger":0,"foes":["rat"],"exits":[],
+				"shop":{"sells":["potions"]}}]}`,
+			want: "shop with no name",
+		},
+		{
+			name: "shop that sells nothing",
+			json: `{"start":"a","regions":[{"id":"a","name":"A","danger":0,"foes":["rat"],"exits":[],
+				"shop":{"name":"Ash","sells":[]}}]}`,
+			want: "sells nothing",
+		},
+		{
+			name: "shop that sells the unknown",
+			json: `{"start":"a","regions":[{"id":"a","name":"A","danger":0,"foes":["rat"],"exits":[],
+				"shop":{"name":"Ash","sells":["dragons"]}}]}`,
+			want: "unknown goods",
+		},
+		{
 			name: "typo in a field name",
 			json: `{"start":"a","regions":[{"id":"a","name":"A","danger":0,"foes":["rat"],"exit":["b"]}]}`,
 			want: "unknown field",
@@ -266,6 +284,78 @@ func TestShippedWorldIsValid(t *testing.T) {
 		}
 		if !reachable {
 			t.Errorf("gated region %q cannot be reached from anywhere", r.ID)
+		}
+	}
+}
+
+func TestShopDeals(t *testing.T) {
+	const withShop = `{
+	  "start": "a",
+	  "regions": [{"id":"a","name":"A","description":"d","danger":0,"foes":["rat"],"exits":[],
+	    "shop":{"name":"Mother Ash","greeting":"A blanket of bottles.","sells":["potions","books"]}}]
+	}`
+
+	w, err := Parse([]byte(withShop))
+	if err != nil {
+		t.Fatalf("Parse returned %v", err)
+	}
+	r, err := w.Region("a")
+	if err != nil {
+		t.Fatalf("Region returned %v", err)
+	}
+	if r.Shop == nil {
+		t.Fatal("the shop was not decoded")
+	}
+	if r.Shop.Name != "Mother Ash" || r.Shop.Greeting == "" {
+		t.Errorf("shop = %+v", r.Shop)
+	}
+
+	if !r.Shop.Deals("potions") || !r.Shop.Deals("books") {
+		t.Error("the shop should deal in what it lists")
+	}
+	if r.Shop.Deals("weapons") {
+		t.Error("the shop should not deal in what it does not list")
+	}
+
+	var none *Shop
+	if none.Deals("potions") {
+		t.Error("a region with no merchant deals in nothing")
+	}
+}
+
+// TestShippedWorldHasMerchants keeps the shipped map honest: the money the
+// player collects must have somewhere to go.
+func TestShippedWorldHasMerchants(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "world.json"))
+	if err != nil {
+		t.Skipf("world.json not found: %v", err)
+	}
+	w, err := Parse(data)
+	if err != nil {
+		t.Fatalf("the shipped world does not parse: %v", err)
+	}
+
+	sold := map[string]bool{}
+	shops := 0
+	for _, r := range w.Regions {
+		if r.Shop == nil {
+			continue
+		}
+		shops++
+		if r.Danger > 1 {
+			t.Errorf("merchant %q stands in %q, danger %d: nobody trades in a place that deadly",
+				r.Shop.Name, r.ID, r.Danger)
+		}
+		for _, kind := range r.Shop.Sells {
+			sold[kind] = true
+		}
+	}
+	if shops == 0 {
+		t.Fatal("the shipped world has no merchant at all")
+	}
+	for _, kind := range ShopKinds {
+		if !sold[kind] {
+			t.Errorf("no merchant in the world sells %s", kind)
 		}
 	}
 }

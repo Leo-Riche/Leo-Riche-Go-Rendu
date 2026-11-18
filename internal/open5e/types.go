@@ -120,6 +120,19 @@ type Weapon struct {
 // lets the player swing.
 func (w Weapon) Melee() bool { return strings.Contains(strings.ToLower(w.Category), "melee") }
 
+// MagicItem is an entry of the /v1/magicitems/ endpoint. Grimhold uses it for
+// the potions merchants sell: the Potion of Healing entry carries the whole
+// table of healing dice in its description.
+type MagicItem struct {
+	Slug       string `json:"slug"`
+	Name       string `json:"name"`
+	Type       string `json:"type"`
+	Desc       string `json:"desc"`
+	Rarity     string `json:"rarity"`
+	Attunement string `json:"requires_attunement"`
+	Document   string `json:"document__slug"`
+}
+
 // Spell is an entry of the /v1/spells/ endpoint.
 type Spell struct {
 	Slug        string `json:"slug"`

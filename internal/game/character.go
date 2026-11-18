@@ -91,6 +91,7 @@ type Character struct {
 	Gold        int             `json:"gold"`
 	Weapon      Weapon          `json:"weapon"`
 	Pack        []Weapon        `json:"pack,omitempty"`
+	Items       []Item          `json:"items,omitempty"`
 	Spells      []Spell         `json:"spells,omitempty"`
 	SpellsUsed  map[string]bool `json:"spells_used,omitempty"`
 }
@@ -287,6 +288,17 @@ func (c *Character) Sheet() string {
 		}
 		sort.Strings(names)
 		fmt.Fprintf(&b, "  Pack        %s\n", strings.Join(names, ", "))
+	}
+	if len(c.Items) > 0 {
+		parts := make([]string, 0, len(c.Items))
+		for _, item := range c.Items {
+			label := item.Name
+			if item.Count > 1 {
+				label += fmt.Sprintf(" x%d", item.Count)
+			}
+			parts = append(parts, label)
+		}
+		fmt.Fprintf(&b, "  Bag         %s\n", strings.Join(parts, ", "))
 	}
 	if len(c.Spells) > 0 {
 		parts := make([]string, 0, len(c.Spells))

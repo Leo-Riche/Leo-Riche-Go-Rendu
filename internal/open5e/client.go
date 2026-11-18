@@ -256,6 +256,22 @@ func (c *Client) Spell(ctx context.Context, slug string) (*Spell, error) {
 	return &s, nil
 }
 
+// MagicItem fetches one magic item by slug, for example "potion-of-healing".
+func (c *Client) MagicItem(ctx context.Context, slug string) (*MagicItem, error) {
+	slug = Slugify(slug)
+	if slug == "" {
+		return nil, fmt.Errorf("magic item: %w: empty name", ErrNotFound)
+	}
+	var item MagicItem
+	if err := getJSON(ctx, c, c.endpoint("/v1/magicitems/"+slug+"/", nil), &item); err != nil {
+		return nil, fmt.Errorf("magic item %q: %w", slug, err)
+	}
+	if item.Name == "" {
+		return nil, fmt.Errorf("magic item %q: %w", slug, ErrNotFound)
+	}
+	return &item, nil
+}
+
 // PrefetchMonsters warms the cache for several slugs at once. Errors are
 // deliberately dropped: a prefetch is an optimisation, and the command that
 // actually needs the monster will report any failure itself.

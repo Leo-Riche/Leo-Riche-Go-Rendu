@@ -77,6 +77,46 @@ func (r *REPL) register() {
 		callback:    r.cmdLoot,
 	})
 	add(cliCommand{
+		name:        "shop",
+		description: "See what the merchant in this region has on offer",
+		callback:    r.cmdShop,
+	})
+	add(cliCommand{
+		name:        "buy",
+		usage:       "buy <number|item>",
+		description: "Buy from the merchant here, by shop number or by name",
+		callback:    r.cmdBuy,
+	})
+	add(cliCommand{
+		name:        "sell",
+		usage:       "sell <item>",
+		description: "Sell a carried item or weapon for half its worth",
+		callback:    r.cmdSell,
+	})
+	add(cliCommand{
+		name:        "inventory",
+		description: "List everything you carry and what it sells for",
+		callback:    r.cmdInventory,
+	})
+	add(cliCommand{
+		name:        "use",
+		usage:       "use <item>",
+		description: "Use something from your bag, whatever it is",
+		callback:    r.cmdUse,
+	})
+	add(cliCommand{
+		name:        "drink",
+		usage:       "drink <potion>",
+		description: "Drink a potion (in a fight it costs you your turn)",
+		callback:    r.cmdDrink,
+	})
+	add(cliCommand{
+		name:        "read",
+		usage:       "read <grimoire>",
+		description: "Read a grimoire and learn its spell for good",
+		callback:    r.cmdRead,
+	})
+	add(cliCommand{
 		name:        "weapons",
 		description: "List what you carry and every melee weapon in the API",
 		callback:    r.cmdWeapons,
@@ -149,6 +189,8 @@ func (r *REPL) register() {
 		"e": "explore", "f": "fight", "attack": "fight", "r": "rest",
 		"c": "character", "char": "character", "sheet": "character",
 		"b": "bestiary", "i": "inspect", "kills": "slain",
+		"inv": "inventory", "bag": "inventory", "study": "read",
+		"store": "shop", "merchant": "shop", "trade": "shop",
 		"run": "flee", "exit": "quit", "q": "quit",
 	} {
 		if _, ok := r.commands[target]; !ok {
@@ -314,6 +356,76 @@ func (r *REPL) cmdLoot(ctx context.Context, args []string) error {
 	}
 	r.printLines(lines)
 	return nil
+}
+
+func (r *REPL) cmdShop(ctx context.Context, args []string) error {
+	if err := r.noArgs("shop", args); err != nil {
+		return err
+	}
+	lines, err := r.game.Shop(ctx)
+	if err != nil {
+		return err
+	}
+	r.printLines(lines)
+	return nil
+}
+
+func (r *REPL) cmdBuy(ctx context.Context, args []string) error {
+	what := joinArgs(args)
+	if what == "" {
+		return fmt.Errorf("buy what? usage: %s", r.commands["buy"].usage)
+	}
+	lines, err := r.game.Buy(ctx, what)
+	if err != nil {
+		return err
+	}
+	r.printLines(lines)
+	return nil
+}
+
+func (r *REPL) cmdSell(_ context.Context, args []string) error {
+	what := joinArgs(args)
+	if what == "" {
+		return fmt.Errorf("sell what? usage: %s", r.commands["sell"].usage)
+	}
+	lines, err := r.game.Sell(what)
+	if err != nil {
+		return err
+	}
+	r.printLines(lines)
+	return nil
+}
+
+func (r *REPL) cmdInventory(_ context.Context, args []string) error {
+	if err := r.noArgs("inventory", args); err != nil {
+		return err
+	}
+	r.printLines(r.game.Inventory())
+	return nil
+}
+
+func (r *REPL) cmdUse(_ context.Context, args []string) error {
+	return r.use("use", "", args)
+}
+
+func (r *REPL) cmdDrink(_ context.Context, args []string) error {
+	return r.use("drink", game.KindPotion, args)
+}
+
+func (r *REPL) cmdRead(_ context.Context, args []string) error {
+	return r.use("read", game.KindBook, args)
+}
+
+// use is the body of use, drink and read: the only difference is which kind
+// of item the name is allowed to match.
+func (r *REPL) use(name string, kind game.ItemKind, args []string) error {
+	what := joinArgs(args)
+	if what == "" {
+		return fmt.Errorf("%s what? usage: %s", name, r.commands[name].usage)
+	}
+	lines, err := r.game.Use(what, kind)
+	r.printLines(lines)
+	return err
 }
 
 func (r *REPL) cmdWeapons(ctx context.Context, args []string) error {

@@ -91,6 +91,16 @@ const fireBoltJSON = `{
   "dnd_class": "Sorcerer, Wizard"
 }`
 
+const potionJSON = `{
+  "slug": "potion-of-healing",
+  "name": "Potion of Healing",
+  "type": "Potion",
+  "desc": "| Healing | Common | 2d4 + 2 |",
+  "rarity": "varies",
+  "requires_attunement": "",
+  "document__slug": "wotc-srd"
+}`
+
 // testServer returns a server serving the fixtures above, a request counter,
 // and a client wired to it.
 func testServer(t *testing.T) (*httptest.Server, *atomic.Int64, *Client) {
@@ -140,6 +150,12 @@ func testServer(t *testing.T) (*httptest.Server, *atomic.Int64, *Client) {
 	}))
 	mux.HandleFunc("/v1/spells/fire-bolt/", count(func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, fireBoltJSON)
+	}))
+	mux.HandleFunc("/v1/magicitems/potion-of-healing/", count(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, potionJSON)
+	}))
+	mux.HandleFunc("/v1/magicitems/empty/", count(func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, `{"slug":"empty"}`)
 	}))
 
 	client := NewClient(
@@ -415,6 +431,32 @@ func TestSpellDecode(t *testing.T) {
 	got := client.SpellsConcurrently(context.Background(), []string{"fire-bolt", "missing-spell"})
 	if len(got) != 1 {
 		t.Errorf("SpellsConcurrently returned %d spells, want the 1 that exists", len(got))
+	}
+}
+
+func TestMagicItemDecodes(t *testing.T) {
+	_, _, client := testServer(t)
+	ctx := context.Background()
+
+	item, err := client.MagicItem(ctx, "Potion of Healing")
+	if err != nil {
+		t.Fatalf("MagicItem returned %v", err)
+	}
+	if item.Name != "Potion of Healing" || item.Type != "Potion" {
+		t.Errorf("item decoded as %+v", item)
+	}
+	if !strings.Contains(item.Desc, "2d4 + 2") {
+		t.Errorf("the healing table is missing from the description: %q", item.Desc)
+	}
+
+	if _, err := client.MagicItem(ctx, "ring-of-nothing"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("an unknown item returned %v, want ErrNotFound", err)
+	}
+	if _, err := client.MagicItem(ctx, "empty"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("a nameless item returned %v, want ErrNotFound", err)
+	}
+	if _, err := client.MagicItem(ctx, "   "); !errors.Is(err, ErrNotFound) {
+		t.Errorf("an empty slug returned %v, want ErrNotFound", err)
 	}
 }
 
