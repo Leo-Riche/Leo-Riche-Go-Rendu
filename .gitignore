@@ -1,0 +1,8 @@
+# Build artifacts
+/grimhold
+/grimhold.exe
+# Local play state
+/save.json
+*.save.json
+# Coverage output
+coverage.out

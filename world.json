@@ -1,0 +1,71 @@
+{
+  "start": "crossroads",
+  "regions": [
+    {
+      "id": "crossroads",
+      "name": "The Crossroads",
+      "description": "Four roads meet under a leaning gallows. Someone has nailed a hand-drawn map to the post; three of the four roads have been scratched out.",
+      "danger": 0,
+      "foes": ["giant-rat", "swarm-of-rats", "bandit"],
+      "exits": ["ashen-marsh", "hollow-barrow", "the-burned-mill"]
+    },
+    {
+      "id": "ashen-marsh",
+      "name": "Ashen Marsh",
+      "description": "Fog, iron, and things that breathe under the water. The reeds are grey with ash and they lean away from you as you pass.",
+      "danger": 1,
+      "foes": ["goblin", "skeleton", "ghoul"],
+      "exits": ["crossroads", "drowned-chapel"]
+    },
+    {
+      "id": "the-burned-mill",
+      "name": "The Burned Mill",
+      "description": "The wheel still turns, though the river dried out a generation ago. Bandits have carved tally marks into the doorframe; the last row is unfinished.",
+      "danger": 1,
+      "foes": ["bandit", "orc", "wolf"],
+      "exits": ["crossroads", "gravewood"]
+    },
+    {
+      "id": "hollow-barrow",
+      "name": "Hollow Barrow",
+      "description": "A grass-covered mound with its mouth pried open. The air inside is colder than the night and tastes of old coins.",
+      "danger": 2,
+      "foes": ["skeleton", "zombie", "shadow", "specter"],
+      "exits": ["crossroads", "drowned-chapel"]
+    },
+    {
+      "id": "gravewood",
+      "name": "Gravewood",
+      "description": "Trees grown through old war graves. Webbing hangs between the trunks in sheets, and something up there is patient.",
+      "danger": 2,
+      "foes": ["giant-spider", "owlbear", "gnoll", "hobgoblin"],
+      "exits": ["the-burned-mill", "obsidian-vault"]
+    },
+    {
+      "id": "drowned-chapel",
+      "name": "The Drowned Chapel",
+      "description": "Pews float in black water up to your chest. The altar candles are lit and nobody has been here for two hundred years.",
+      "danger": 3,
+      "foes": ["ghoul", "wight", "vampire-spawn", "will-o-wisp"],
+      "exits": ["ashen-marsh", "hollow-barrow", "obsidian-vault"]
+    },
+    {
+      "id": "obsidian-vault",
+      "name": "Obsidian Vault",
+      "description": "A stair of black glass descending into warmth. Every step you take is answered, far below, by something much heavier.",
+      "danger": 4,
+      "foes": ["troll", "minotaur", "mummy", "young-black-dragon"],
+      "exits": ["drowned-chapel", "gravewood", "hall-of-the-mummy-king"]
+    },
+    {
+      "id": "hall-of-the-mummy-king",
+      "name": "Hall of the Mummy King",
+      "description": "A hall of painted pillars, swept clean. At the far end a figure in gold leaf sits waiting, and it has been told your name.",
+      "danger": 5,
+      "min_level": 5,
+      "boss": "mummy-lord",
+      "foes": ["mummy", "wight"],
+      "exits": ["obsidian-vault"]
+    }
+  ]
+}
